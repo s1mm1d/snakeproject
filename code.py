@@ -22,6 +22,12 @@ class Consts:
     max_coord = 525
 
 
+def exit():
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+
+
 def fill_records_array():
     for i in range(Consts.record_size):
         Globals.high_score.append([j for j in (Globals.f.readline().split())])
@@ -30,25 +36,19 @@ def fill_records_array():
 def print_main_screen():
     screen.blit(background, (0, 0))
     game_name = Big_titles.render(f'Игра Змейка', 1, pygame.Color('red'))
-    title_1 = small_titles.render(f'выберите раздел соответствующей цифрой на клавиатуре', 1, pygame.Color('red'))
-    title_2 = small_titles.render(f'1. Уровень 1 (easy, vanila)', 1, pygame.Color('red'))
-    title_3 = small_titles.render(f'2. Уровень 2 (easy)', 1, pygame.Color('red'))
-    title_4 = small_titles.render(f'3. Уровень 3 (medium)', 1, pygame.Color('red'))
-    title_5 = small_titles.render(f'4. Уровень 4 (hard)', 1, pygame.Color('red'))
-    title_6 = small_titles.render(f'5. Уровень 5 (very hard)', 1, pygame.Color('red'))
-    title_7 = small_titles.render(f'6. Таблица рекордов', 1, pygame.Color('red'))
-    title_8 = small_titles.render(f'7. Настройка цвета змеи', 1, pygame.Color('red'))
-    title_9 = small_titles.render(f'8. Ввод имени для таблицы рекордов', 1, pygame.Color('red'))
+    title = [0] * 10
+    title[9] = small_titles.render(f'выберите раздел соответствующей цифрой на клавиатуре', 1, pygame.Color('red'))
+    title[1] = small_titles.render(f'1. Уровень 1 (easy, vanila)', 1, pygame.Color('red'))
+    title[2] = small_titles.render(f'2. Уровень 2 (easy)', 1, pygame.Color('red'))
+    title[3] = small_titles.render(f'3. Уровень 3 (medium)', 1, pygame.Color('red'))
+    title[4] = small_titles.render(f'4. Уровень 4 (hard)', 1, pygame.Color('red'))
+    title[5] = small_titles.render(f'5. Уровень 5 (very hard)', 1, pygame.Color('red'))
+    title[6] = small_titles.render(f'6. Таблица рекордов', 1, pygame.Color('red'))
+    title[7] = small_titles.render(f'7. Настройка цвета змеи', 1, pygame.Color('red'))
+    title[8] = small_titles.render(f'8. Ввод имени для таблицы рекордов', 1, pygame.Color('red'))
     screen.blit(game_name, (130, 50))
-    screen.blit(title_1, (90, 500))
-    screen.blit(title_2, (90, 180))
-    screen.blit(title_3, (90, 220))
-    screen.blit(title_4, (90, 260))
-    screen.blit(title_5, (90, 300))
-    screen.blit(title_6, (90, 340))
-    screen.blit(title_7, (90, 380))
-    screen.blit(title_8, (90, 420))
-    screen.blit(title_9, (90, 460))
+    for i in range(1, 10):
+        screen.blit(title[i], (90, 140 + i * 40))
     pygame.display.flip()
 
 
@@ -91,9 +91,7 @@ def name_change_block():
                 if event.key == pygame.K_ESCAPE:
                     flag = False
                 Name += event.unicode
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
+        exit()
         clock.tick(Globals.FPS)
 
 
@@ -138,9 +136,7 @@ def block_set_color():
         block_color_set_description()
         key = pygame.key.get_pressed()
         clock.tick(Globals.FPS)
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
+        exit()
         set_color(key)
         if key[pygame.K_ESCAPE]:
             break
@@ -156,9 +152,7 @@ def record_table_block():
                 f'{count + 1}. {Globals.high_score[Consts.record_size - 1 - count][0]} {Globals.high_score[Consts.record_size - 1 - count][1]}',
                 1, pygame.Color('red'))
             screen.blit(cur_record, (100, 100 + 40 * count))
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
+        exit()
         key = pygame.key.get_pressed()
         if key[pygame.K_ESCAPE]:
             break
@@ -182,9 +176,7 @@ def levels_block(key):
 def block_choice():
     while True:
         print_main_screen()
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
+        exit()
         key = pygame.key.get_pressed()
         if key[pygame.K_8]:
             name_change_block()
@@ -227,6 +219,7 @@ def draw_snake_and_apple():
 
 
 def initiall_point_wo_walls(FPS):
+    Globals.score = 0
     Globals.FPS = FPS
     Globals.dx, Globals.dy = 0, 0
     Globals.permissions = {'W': True, 'A': True, 'S': True, 'D': True}
@@ -276,23 +269,37 @@ def move_snake_w_bon_apple(mltp):
         Globals.x += Globals.dx * Consts.SIZE_1
         Globals.y += Globals.dy * Consts.SIZE_1
         Globals.snake.append((Globals.x, Globals.y))
-        Globals.snake = Globals.snake[-Globals.length:]
-        if Globals.snake[-1] == Globals.apple:
+        if Globals.bonus_flag == 0:
+            Globals.snake = Globals.snake[-Globals.length:]
+        else:
+            Globals.bonus_flag -= 1
             Globals.length += 1
-            Globals.score += mltp * Globals.length - 1
-            if Globals.apple_color == Consts.YELLOW:
-                Globals.score += Globals.length - 1
-            Globals.apple = (random.randrange(Consts.min_coord, Consts.max_coord, Consts.SIZE_1),
-                             random.randrange(Consts.min_coord, Consts.max_coord, Consts.SIZE_1))
-            if random.randint(1, 5) == 3:
-                Globals.apple_color = Consts.YELLOW
-            else:
-                Globals.apple_color = Consts.RED
-            Globals.FPS += 1
+        is_apple_eaten(mltp)
         Globals.count = 100
     else:
         Globals.count -= 1
         clock.tick(Globals.FPS)
+
+
+def is_apple_eaten(mltp):
+    if Globals.snake[-1] == Globals.apple:
+        Globals.length += 1
+        Globals.score += mltp * Globals.length - 1
+        if Globals.apple_color == Consts.YELLOW:
+            Globals.score += Globals.length - 1
+        if Globals.apple_color == Consts.BLUE:
+            Globals.walls_flag = 40
+        Globals.apple = (random.randrange(Consts.min_coord, Consts.max_coord, Consts.SIZE_1),
+                         random.randrange(Consts.min_coord, Consts.max_coord, Consts.SIZE_1))
+        if random.randint(1, 5) == 3:
+            Globals.apple_color = Consts.YELLOW
+        elif random.randint(1, 5) == 4:
+            Globals.apple_color = Consts.BLUE
+        else:
+            Globals.apple_color = Consts.RED
+        if random.randint(1, 5) == 2:
+            bonus_length()
+        Globals.FPS += 1
 
 
 def draw_screen():
@@ -303,30 +310,31 @@ def draw_screen():
     draw_snake_and_apple()
 
 
+def bonus_length():
+    Globals.bonus_flag = 3
+    Globals.score += 5
+
+
 def level_1():
-    Globals.score = 0
     FPS_1 = 10
     initiall_point_wo_walls(FPS_1)
     while True:
         draw_screen()
-        flag_1 = Globals.x < 75 or Globals.x >= 525
-        flag_2 = Globals.y < 75 or Globals.y >= 525
+        flag_1 = Globals.x < Consts.min_coord or Globals.x >= Consts.max_coord
+        flag_2 = Globals.y < Consts.min_coord or Globals.y >= Consts.max_coord
         flag_3 = len(Globals.snake) != len(set(Globals.snake))
         if flag_3 or flag_2 or flag_1:
             refill_high_score()
             break
         move_snake()
         pygame.display.flip()
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
+        exit()
         clock.tick(Globals.FPS)
         key = pygame.key.get_pressed()
         change_direction(key)
 
 
 def level_2():
-    Globals.score = 0
     FPS_2 = 15
     initiall_point_wo_walls(FPS_2)
     while True:
@@ -339,9 +347,7 @@ def level_2():
             break
         move_snake_w_bon_apple(1)
         pygame.display.flip()
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
+        exit()
         clock.tick(Globals.FPS)
         key = pygame.key.get_pressed()
         change_direction(key)
@@ -376,6 +382,11 @@ def draw_walls(walls):
         pygame.draw.rect(screen, Consts.BLACK, [u, v, Consts.SIZE_1, Consts.SIZE_1])
 
 
+def draw(walls_flag):
+    walls_counter = titles.render(f'Ходов до конца бонуса: {walls_flag}', 1, pygame.Color('red'))
+    screen.blit(walls_counter, (300, 10))
+
+
 def level_3():
     FPS_3 = 15
     walls = set_walls_3()
@@ -387,15 +398,16 @@ def level_3():
         flag_1 = Globals.x < Consts.min_coord or Globals.x >= Consts.max_coord
         flag_2 = Globals.y < Consts.min_coord or Globals.y >= Consts.max_coord
         flag_3 = len(Globals.snake) != len(set(Globals.snake))
-        if flag_3 or flag_2 or flag_1 or (Globals.x, Globals.y) in walls:
+        if flag_3 or flag_2 or flag_1 or (((Globals.x, Globals.y) in walls) and Globals.walls_flag == 0):
             refill_high_score()
             break
-        move_snake_w_bon_apple(2)
+        if Globals.walls_flag > 0:
+            Globals.walls_flag -= 1
+            draw(Globals.walls_flag)
+        move_snake_w_bon_apple(3)
         pygame.display.flip()
         clock.tick(Globals.FPS)
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
+        exit()
         key = pygame.key.get_pressed()
         change_direction(key)
 
@@ -408,9 +420,11 @@ def set_walls_4():
     for counter in range(min_wall_4, max_wall_4):
         if counter != gap:
             walls.append((Consts.min_coord + min_wall_4 * Consts.SIZE_1, Consts.min_coord + counter * Consts.SIZE_1))
-            walls.append((Consts.min_coord + (max_wall_4 - 1) * Consts.SIZE_1, Consts.min_coord + counter * Consts.SIZE_1))
+            walls.append(
+                (Consts.min_coord + (max_wall_4 - 1) * Consts.SIZE_1, Consts.min_coord + counter * Consts.SIZE_1))
             walls.append((Consts.min_coord + counter * Consts.SIZE_1, Consts.min_coord + min_wall_4 * Consts.SIZE_1))
-            walls.append((Consts.min_coord + counter * Consts.SIZE_1, Consts.min_coord + (max_wall_4 - 1) * Consts.SIZE_1))
+            walls.append(
+                (Consts.min_coord + counter * Consts.SIZE_1, Consts.min_coord + (max_wall_4 - 1) * Consts.SIZE_1))
     return walls
 
 
@@ -425,15 +439,16 @@ def level_4():
         flag_1 = Globals.x < Consts.min_coord or Globals.x >= Consts.max_coord
         flag_2 = Globals.y < Consts.min_coord or Globals.y >= Consts.max_coord
         flag_3 = len(Globals.snake) != len(set(Globals.snake))
-        if flag_3 or flag_2 or flag_1 or (Globals.x, Globals.y) in walls:
+        if flag_3 or flag_2 or flag_1 or (((Globals.x, Globals.y) in walls) and Globals.walls_flag == 0):
             refill_high_score()
             break
+        if Globals.walls_flag > 0:
+            Globals.walls_flag -= 1
+            draw(Globals.walls_flag)
         move_snake_w_bon_apple(3)
         pygame.display.flip()
         clock.tick(Globals.FPS)
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
+        exit()
         key = pygame.key.get_pressed()
         change_direction(key)
 
@@ -443,12 +458,13 @@ def set_walls_5():
     gap_1 = 10
     gap_2 = 19
     max_wall_5 = 29
-    for counter in range(30):
+    for counter in range(max_wall_5 + 1):
         if counter != gap_1 and counter != gap_2:
             walls.append(
                 (Consts.min_coord + (max_wall_5 - counter) * Consts.SIZE_1, Consts.min_coord + counter * Consts.SIZE_1))
             walls.append((Consts.min_coord + counter * Consts.SIZE_1, Consts.min_coord + counter * Consts.SIZE_1))
     return walls
+
 
 def level_5():
     FPS_5 = 15
@@ -461,14 +477,15 @@ def level_5():
         flag_1 = Globals.x < Consts.min_coord or Globals.x >= Consts.max_coord
         flag_2 = Globals.y < Consts.min_coord or Globals.y >= Consts.max_coord
         flag_3 = len(Globals.snake) != len(set(Globals.snake))
-        if flag_3 or flag_2 or flag_1 or (Globals.x, Globals.y) in walls:
+        if flag_3 or flag_2 or flag_1 or (((Globals.x, Globals.y) in walls) and Globals.walls_flag == 0):
             refill_high_score()
             break
+        if Globals.walls_flag > 0:
+            Globals.walls_flag -= 1
+            draw(Globals.walls_flag)
         move_snake_w_bon_apple(4)
         pygame.display.flip()
         clock.tick(Globals.FPS)
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
+        exit()
         key = pygame.key.get_pressed()
         change_direction(key)

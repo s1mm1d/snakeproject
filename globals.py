@@ -17,3 +17,5 @@ class Globals:
     length = 0
     count = 0
     score = 0
+    bonus_flag = 0
+    walls_flag = 0
